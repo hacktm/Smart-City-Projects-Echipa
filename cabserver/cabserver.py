@@ -98,25 +98,32 @@ class CabHandler( ProfileHandler ):
 		resp_served = {}
 		if command == "get_trips":
 			# TODO SQL 
-			# - input: pr_dict['user_id']
-			if not pr_dict.has_key('user_id'):
-				resp_served = {'status': "error", 'details': "missing parameters: %s" %('user_id'), 'api_fn': command}
+			# - input: pr_dict['id_user']
+			if not pr_dict.has_key('id_user'):
+				resp_served = {'status': "error", 'details': "missing parameters: %s" %('id_user'), 'api_fn': command}
 			else:
-				resp_served = {	'id'          : -001,
-							'id_user'     : pr_dict['user_id'],
-							'start_moment': time.time(),
-							'stop_moment' : time.time(),
-							'distance'    : -1,
-							'idle'        : -1,
-							'price'       : -1,
-							'status'      : "OK",
-							}
+				sql_r = sql('SELECT * FROM trips WHERE id_user = %(id_user)s', id_user=pr_dict['id_user'])
+				if type(sql_r) is ListType   and   len(sql_r) >= 1:
+					resp_served['trips_list'] = []
+					for item in sql_r:
+						resp_served['trips_list'].append({	'id'          : item[0],
+															'id_user'     : pr_dict['id_user'],
+															'start_moment': str(item[2]),
+															'stop_moment' : str(item[3]),
+															'distance'    : item[4],
+															'idle'        : item[5],
+															'price'       : item[6],
+														})
+						resp_served['status'] = "OK"
+				else:
+					resp_served = {'status': "WARN", 'details': "no records marched", 'api_fn': command}
 		elif command == "get_positions":
 			# TODO SQL
 			# - input: pr_dict['trip_id']
 			if not pr_dict.has_key('trip_id'):
 				resp_served = {'status': "error", 'details': "missing parameters: %s" %('trip_id'), 'api_fn': command}
 			else:
+				sql_r = sql('SELECT * FROM positions WHERE id_trip = %(id_trip)s', id_trip=pr_dict['id_trip'])
 				positions_list = [	{'lat':-1, 'lng': -1, 'time': time.time()}, 
 									{'lat':-1, 'lng': -1, 'time': time.time()},
 								]
@@ -124,6 +131,16 @@ class CabHandler( ProfileHandler ):
 							'positions': positions_list,
 							'status'      : "OK",
 						}
+		elif command == "login":
+			if not pr_dict.has_key('user')   or   not pr_dict.has_key('pswd'):
+				resp_served = {'status': "error", 'details': "missing one or both of the following parameters: %s" %('user or pswd'), 'api_fn': command}
+			else:
+				sql_r = sql('SELECT * FROM users WHERE user = %(user)s AND pswd = %(pswd)s', user=pr_dict['user'], pswd=pr_dict['pswd'] )
+				if type(sql_r) is ListType   and   len(sql_r) == 1:
+					resp_served['id_user'] = sql_r[0]
+					resp_served['status'] = "OK"
+				elif type(sql_r) is ListType   and   len(sql_r) > 1:
+					resp_served = {'status': "error", 'details': "found more users with the same credentials", 'api_fn': command}
 		else: # not defined
 			resp_served = {'status': "error", 'details': "function not implemented", 'api_fn': command}
 		
@@ -137,13 +154,13 @@ class CabHandler( ProfileHandler ):
 				%(color_cyan_b, command, color_reset, \
 				color_cyan_l, pr_dict, color_reset) )
 		if command == "set_position":
-			pr_dict = dict( user_id   = self.get_argument('user_id', ''),
+			pr_dict = dict( id_user   = self.get_argument('id_user', ''),
 							timestamp = self.get_argument('timestamp', ''),
 							lat       = self.get_argument('lat', ''),
 							lng       = self.get_argument('lng', ''),
 							)
 		elif command == "add_event":
-			pr_dict = dict( user_id   = self.get_argument('user_id', ''),
+			pr_dict = dict( id_user   = self.get_argument('id_user', ''),
 							timestamp = self.get_argument('timestamp', ''),
 							type      = self.get_argument('type', ''),
 							city_hwy  = self.get_argument('city_hwy', ''),
@@ -180,6 +197,13 @@ class Application(tornado.web.Application):
 
 application = Application( my_handlers, **my_settings )
 
+
+#*******************************************************************************
+#
+# setup psql
+#
+#*******************************************************************************
+
 dbcon = configure(db_host='127.0.0.1', db_port='5432', db_name='cashacab', db_username='postgres', db_password='RasPi', autocommit=True)
 
 #sql(statement, commit=False, conn_name='default', **kwargs)
@@ -187,6 +211,37 @@ dbcon = configure(db_host='127.0.0.1', db_port='5432', db_name='cashacab', db_us
 # 			VALUES (%(id_user)s, %(start_moment)s, %(stop_moment)s, %(distance)s, %(idle)s, %(price)s) """,
 # 			id_user=1, start_moment=time.strftime( "%Y-%m-%d %H:%M:%S" ), stop_moment=time.strftime( "%Y-%m-%d %H:%M:%S" ), distance=10000, idle=10, price=20.99 )
 # print("sql_r = ", sql_r)
+create_trips = """CREATE TABLE trips(
+	id             bigserial, 
+	id_user        bigserial, 
+	start_moment   timestamp, 
+	stop_moment    timestamp, 
+	start_location float8,
+	stop_location  float8,
+	distance       bigint, 
+	idle           integer,
+	price          money
+	);"""
+create_users = """CREATE TABLE users(
+	id             bigserial, 
+	name           varchar, 
+	pswd           varchar, 
+	email          varchar, 
+	phone          varchar, 
+	level          smallint
+	);"""
+create_positions = """CREATE TABLE positions(
+	id             bigserial,
+	id_trip        bigserial,
+	lat            float8,
+	lng            float8,
+	time           timestamp,
+	city_hwy       bool
+	);"""
+#sql_r = sql(create_positions)
+#print("sql_r = ", sql_r)
+#exit(0)
+
 sql_r = sql('SELECT * FROM trips')
 print("sql_r = ", sql_r)
 
