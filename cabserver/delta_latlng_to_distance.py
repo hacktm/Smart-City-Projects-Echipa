@@ -44,6 +44,8 @@ if __name__ == "__main__":
 	#main()
 	r = delta_latlng_to_distance(-37.81319, 144.96298,-31.95285, 115.85734)
 	print("delta_latlng_to_distance[m] = %s [km] = %s" %(r, r/1000.0))
+	r = delta_latlng_to_distance(45.759811, 21.218349,45.759930, 21.258604)
+	print("delta_latlng_to_distance[m] = %s [km] = %s" %(r, r/1000.0))
 
 
 

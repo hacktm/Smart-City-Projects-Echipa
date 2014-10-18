@@ -1,0 +1,75 @@
+body {
+    background-color: lightblue;
+    margin:0px;
+    font:15px bold arial, sans-serif;
+}
+
+#main_menu {
+    background-color: dodgerblue;
+    width: 100%;
+    height: 49px;
+}
+
+#menu_table {
+    width: 333px;
+    text-align: center;
+    padding-top: 10px;
+}
+
+#login_menu {
+    width: 200px;
+    text-align:center;
+    left: 550px; 
+    top: 250px; 
+    position: fixed;
+    visibility: visible;
+}
+
+#header_img {
+    width:100%;
+}
+
+.login_element {
+    padding: 4px;
+    margin: 2px;
+}
+
+#login_button {
+    margin: 4px;
+}
+
+hr { 
+    display: block;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    margin-left: auto;
+    margin-right: auto;
+    border-style: inset;
+    border-width: 100px;
+    border-bottom-width: 49px;
+    border-left-width: 0px;
+    border-top-width: 0px;
+    border-right-width: 0px
+}
+
+/* Trip page*/
+
+#trip_list {
+    position: fixed;
+    width: 760px;
+    margin-left: 290px;
+    margin-top: 68px;
+}
+
+.trip_element {
+    height:25px;
+    text-align:center;
+}
+
+#map_container {
+    width:760px;
+    height:100px;
+    background-color:azure;
+    margin-left:290px;
+    margin-top:220px;
+}
