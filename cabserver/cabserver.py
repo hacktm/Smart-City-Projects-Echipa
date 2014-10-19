@@ -110,9 +110,11 @@ class CabHandler( ProfileHandler ):
 															'id_user'     : pr_dict['id_user'],
 															'start_moment': str(item[2]),
 															'stop_moment' : str(item[3]),
-															'distance'    : item[4],
-															'idle'        : item[5],
-															'price'       : item[6],
+															'start_location': item[4],
+															'stop_location': item[5],
+															'distance'    : item[6],
+															'idle'        : item[7],
+															'price'       : item[8],
 														})
 						resp_served['status'] = "OK"
 				else:
@@ -135,9 +137,26 @@ class CabHandler( ProfileHandler ):
 			if not pr_dict.has_key('user')   or   not pr_dict.has_key('pswd'):
 				resp_served = {'status': "error", 'details': "missing one or both of the following parameters: %s" %('user or pswd'), 'api_fn': command}
 			else:
-				sql_r = sql('SELECT * FROM users WHERE user = %(user)s AND pswd = %(pswd)s', user=pr_dict['user'], pswd=pr_dict['pswd'] )
+				sql_r = sql("""SELECT id, name, email, phone, level FROM users WHERE name = %(user)s AND pswd = %(pswd)s""", user=pr_dict['user'], pswd=pr_dict['pswd'] )
+				if type(sql_r) is ListType   and   len(sql_r) == 0:
+					resp_served = {'status': "WARN", 'details': "no records matched", 'api_fn': command}
 				if type(sql_r) is ListType   and   len(sql_r) == 1:
-					resp_served['id_user'] = sql_r[0]
+					resp_served['user_info'] = { 	'id_user':     sql_r[0][0],
+													'name':    sql_r[0][1],
+													'email':   sql_r[0][2],
+													'phone':   sql_r[0][3],
+													'level':   sql_r[0][4],
+												}
+					# also add prices:
+					sql_r = sql("""SELECT day, night, city, hwy, stationary FROM tarrifs """)
+					print("sql_r = ", sql_r)
+					if type(sql_r) is ListType   and   len(sql_r) == 1:
+						resp_served['tarrifs'] = { 	'day':     sql_r[0][0],
+													'night':    sql_r[0][1],
+													'cty':   sql_r[0][2],
+													'hwy':   sql_r[0][3],
+													'stationary':   sql_r[0][4],
+												}
 					resp_served['status'] = "OK"
 				elif type(sql_r) is ListType   and   len(sql_r) > 1:
 					resp_served = {'status': "error", 'details': "found more users with the same credentials", 'api_fn': command}
@@ -207,43 +226,60 @@ application = Application( my_handlers, **my_settings )
 dbcon = configure(db_host='127.0.0.1', db_port='5432', db_name='cashacab', db_username='postgres', db_password='RasPi', autocommit=True)
 
 #sql(statement, commit=False, conn_name='default', **kwargs)
-# sql_r = sql("""INSERT INTO trips (id_user, start_moment, stop_moment, distance, idle, price)
-# 			VALUES (%(id_user)s, %(start_moment)s, %(stop_moment)s, %(distance)s, %(idle)s, %(price)s) """,
-# 			id_user=1, start_moment=time.strftime( "%Y-%m-%d %H:%M:%S" ), stop_moment=time.strftime( "%Y-%m-%d %H:%M:%S" ), distance=10000, idle=10, price=20.99 )
+# sql_r = sql("""INSERT INTO trips (id_user, start_moment, stop_moment, start_location, stop_location, distance, idle, price)
+# 			VALUES (%(id_user)s, %(start_moment)s, %(stop_moment)s, %(start_location)s, %(stop_location)s, %(distance)s, %(idle)s, %(price)s) """,
+# 			id_user=1, start_moment=time.strftime( "%Y-%m-%d %H:%M:%S" ), stop_moment=time.strftime( "%Y-%m-%d %H:%M:%S" ), start_location=[-37.81319, 144.96298], stop_location=[-31.95285, 115.85734], distance=2721560.85287, idle=10, price=200.99 )
+# sql_r = sql("""INSERT INTO users (id, name, pswd, email, phone, level)
+# 			VALUES ( %(id)s, %(name)s, %(pswd)s, %(email)s, %(phone)s, %(level)s )""",
+# 			id=1, name='giglel', pswd='1234', email='g@y.ro', phone='+40256123456', level=1)
+# sql_r = sql("""INSERT INTO tarrifs (day, night, city, hwy, stationary)
+# 			VALUES ( %(day)s, %(night)s, %(city)s, %(hwy)s, %(stationary)s )""",
+# 			day=1, night=3, city=1, hwy=2, stationary=0.50)
 # print("sql_r = ", sql_r)
 create_trips = """CREATE TABLE trips(
-	id             bigserial, 
+	id             bigserial  PRIMARY KEY, 
 	id_user        bigserial, 
 	start_moment   timestamp, 
 	stop_moment    timestamp, 
-	start_location float8,
-	stop_location  float8,
+	start_location float8[2],
+	stop_location  float8[2],
 	distance       bigint, 
 	idle           integer,
 	price          money
 	);"""
 create_users = """CREATE TABLE users(
-	id             bigserial, 
-	name           varchar, 
-	pswd           varchar, 
-	email          varchar, 
-	phone          varchar, 
+	id             bigserial  PRIMARY KEY, 
+	name           text, 
+	pswd           text, 
+	email          text, 
+	phone          text, 
 	level          smallint
 	);"""
 create_positions = """CREATE TABLE positions(
-	id             bigserial,
+	id             bigserial  PRIMARY KEY,
 	id_trip        bigserial,
 	lat            float8,
 	lng            float8,
 	time           timestamp,
 	city_hwy       bool
 	);"""
-#sql_r = sql(create_positions)
-#print("sql_r = ", sql_r)
-#exit(0)
+create_tarrifs = """CREATE TABLE tarrifs(
+	day	        money,
+	night       money,
+	city        money,
+	hwy         money,
+	stationary  money
+	);"""
+# KEEP IT COMMENTED !
+# sql_r = sql(create_trips)
+# sql_r = sql(create_users)
+# sql_r = sql(create_positions)
+# sql_r = sql(create_tarrifs)
+# print("sql_r = ", sql_r)
+# exit(0)
 
-sql_r = sql('SELECT * FROM trips')
-print("sql_r = ", sql_r)
+#sql_r = sql('SELECT * FROM trips')
+#print("sql_r = ", sql_r)
 
 
 #*******************************************************************************
