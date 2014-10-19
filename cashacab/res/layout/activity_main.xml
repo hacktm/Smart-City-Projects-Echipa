@@ -18,7 +18,7 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
-            android:text="13.25 LEI"
+            android:text="0 LEI"
             android:textSize="50sp" />
         
             <TextView
@@ -78,7 +78,7 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
-            android:text="5.42 KM "
+            android:text="0 KM "
             android:textSize="18sp" />
 
 

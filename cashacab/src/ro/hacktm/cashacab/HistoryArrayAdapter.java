@@ -1,7 +1,9 @@
 package ro.hacktm.cashacab;
 
 
+import java.text.DecimalFormat;
 import java.util.List;
+
 
 
 import android.content.Context;
@@ -16,10 +18,10 @@ public class HistoryArrayAdapter extends ArrayAdapter<String> {
 	private LayoutInflater mInflater;
 
 	private int mViewResourceId;
-	List<SingleRow> list;
+	List<Trip> list;
 
 	public HistoryArrayAdapter(Context ctx, int viewResourceId,
-			List<SingleRow> singleList) {
+			List<Trip> singleList) {
 		super(ctx, viewResourceId);
 
 		mInflater = (LayoutInflater) ctx
@@ -53,11 +55,12 @@ public class HistoryArrayAdapter extends ArrayAdapter<String> {
 		TextView tv3 = (TextView) convertView.findViewById(R.id.price);
 		// for (Iterator<SingleRow> item = list.iterator(); item.hasNext();) {
 
-		SingleRow s = list.get(position);
-		tv.setText(s.getStartAddress());
-		tv1.setText(s.getStopAddress());
-		tv2.setText(s.getDistance());
-		tv3.setText(s.getPrice());
+		Trip t = list.get(position);
+		float distance = t.getDistance()/1000;
+		tv.setText(t.getStartAddress());
+		tv1.setText(t.getStopAddress());
+		tv2.setText(String.format("%.1f", distance) + " KM");
+		tv3.setText(t.getPrice().toString());
 		return convertView;
 	}
 }
