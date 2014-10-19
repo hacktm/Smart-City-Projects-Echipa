@@ -73,6 +73,27 @@ class MainHandler( ProfileHandler ):
 		""""  not much """
 		pass
 
+class Index1( ProfileHandler ):
+	def get(self):
+		""" render the html template """
+		self.set_header('Content-Type', 'text/html')
+		self.render( "index-1.html", title="My title" )
+class Index2( ProfileHandler ):
+	def get(self):
+		""" render the html template """
+		self.set_header('Content-Type', 'text/html')
+		self.render( "index-2.html", title="My title" )
+class Index3( ProfileHandler ):
+	def get(self):
+		""" render the html template """
+		self.set_header('Content-Type', 'text/html')
+		self.render( "index-3.html", title="My title" )
+class Index4( ProfileHandler ):
+	def get(self):
+		""" render the html template """
+		self.set_header('Content-Type', 'text/html')
+		self.render( "index-4.html", title="My title" )
+
 
 class CabHandler( ProfileHandler ):
 	""" handles requests from cab tablets """
@@ -261,7 +282,12 @@ my_settings = {
 				#"cookie_secret":"",
 				"debug":True,
 				}
-my_handlers = [	(r"/", MainHandler),
+my_handlers = [	(r"/index.html", MainHandler),
+				(r"/index-1.html", Index1),
+				(r"/index-2.html", Index2),
+				(r"/index-3.html", Index3),
+				(r"/index-4.html", Index4),
+				#(r"/index-1.html", Register),
 				(r"/webservice/([0-9a-zA-Z_;]*)", CabHandler),
 				#(r"/story/([0-9]+)", StoryHandler),
 				]
