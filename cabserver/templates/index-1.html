@@ -18,17 +18,21 @@
 		
 		<script>
 			$(document).ready(function(){
-				$(".grid_4").click(function() {
-					var day=this.innerHTML;
-					alert("das");
-			$.ajax({
-			type: "GET",
-			url: "webservice/get_drivers",
-			
-			}).done(function( msg ) {
-			alert( "Data Saved: " + msg );
-			});					
-				 });
+// 				$(".grid_4").click(function() {
+// 					var day=this.innerHTML;
+// 					alert("das");
+// 					$.ajax({
+// 						type: "GET",
+// 						url: "webservice/get_drivers",
+// 					}).done(function( msg ) {
+// 						//alert( "Data Saved: " + msg );
+// 						var table = $('table.results');
+// 						msg.user_list.forEach(function (user) {
+// 							var tr = $('<tr></tr>');
+// 							tr.append($('<td>' + user.username + '</td>'));
+// 						});
+// 					});
+// 				});
 			});
 		</script>
 		<!--[if lt IE 8]>

@@ -76,8 +76,14 @@
 					</div>
 					<div class="clear"></div>
 				</div>
-				<div class="trip_table">
-				</div>
+				<table class="results">
+					<tr>
+						<td>Start Moment</td>
+						<td>Stop Moment</td>
+						<td>Idle</td>
+						<td>Distance</td>
+					</tr>
+				</table>
 			</div>
 		</div>
 <!--==============================footer=================================-->
@@ -132,6 +138,25 @@
 			$(document).ready(function(){
 				$().UItoTop({ easingType: 'easeOutQuart' });
 				init_calenda();
+				$(".fc-date").click(function() {
+					var day = this.innerHTML;
+					$.ajax({
+						type: "GET",
+						url: "webservice/get_trips?id_user=1/",
+					}).done(function( msg ) {
+						//alert( "Data Saved: " + msg );
+						var table = $('table.results');
+						table.find('tr').not('tr:first-child').remove();
+						msg.trips_list.forEach(function (trip) {
+							var tr = $('<tr></tr>');
+							tr.append($('<td>' + trip.start_moment + '</td>'));
+							tr.append($('<td>' + trip.stop_moment + '</td>'));
+							tr.append($('<td>' + trip.idle + '</td>'));
+							tr.append($('<td>' + trip.distance + '</td>'));
+							table.append(tr);
+						});
+					});
+				});
 			});
 		</script>		
 	</body>

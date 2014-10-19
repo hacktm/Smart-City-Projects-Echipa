@@ -239,6 +239,7 @@ class CabHandler( ProfileHandler ):
 							type      = self.get_argument('type', ''),
 							city_hwy  = self.get_argument('city_hwy', ''),
 							distance  = self.get_argument('distance', ''),
+							idle  = self.get_argument('idle', ''),
 							price     = self.get_argument('price', ''),
 							start_moment   = self.get_argument('start_moment', ''),
 							stop_moment    = self.get_argument('stop_moment', ''),
