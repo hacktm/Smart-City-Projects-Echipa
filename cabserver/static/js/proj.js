@@ -9,7 +9,7 @@ $.ajax({
   data: { day: day}
 })
   .done(function( msg ) {
-    alert( "Data Saved: " + msg );
+//    alert( "Data Saved: " + msg );
   });
 });
 }
