@@ -899,4 +899,10 @@ header h1 a {
 	
 .grid_4:hover  blockquote{
 	background-color: #C8CDCD;
-	}	
+	}
+
+.results {
+    width: 100%;
+    margin-top: 20px;
+    margin-left: 79px;
+}
