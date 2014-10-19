@@ -243,8 +243,8 @@ class CabHandler( ProfileHandler ):
 							price     = self.get_argument('price', ''),
 							start_moment   = self.get_argument('start_moment', ''),
 							stop_moment    = self.get_argument('stop_moment', ''),
-							start_location = self.get_argument('start_location', ''),
-							stop_location  = self.get_argument('stop_location', ''),
+							start_location = self.get_argument('start_location', []).replace("u", "").replace("[", "").replace("]", "").split(','),
+							stop_location  = self.get_argument('stop_location', [] ).replace("u", "").replace("[", "").replace("]", "").split(','),
 						)
 			if pr_dict['type'] == "stop":
 				# add a trip
