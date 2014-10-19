@@ -85,8 +85,8 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="50dp"
             android:textColor="#8a7810"
-            android:textSize="30sp"
-            android:text="Cash a cab" />
+            android:textSize="40sp"
+            android:text="CASH A CAB" />
 
     </RelativeLayout>
 

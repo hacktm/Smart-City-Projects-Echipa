@@ -1,16 +1,16 @@
 package ro.hacktm.cashacab;
 
-import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -22,7 +22,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-public class JourneyActivity extends Activity {
+public class JourneyActivity extends ActionBarActivity {
 	
     private double lastLat1=0.0;
     private double lastLng1=0.0;
@@ -36,6 +36,13 @@ public class JourneyActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_journey);
+		
+		ActionBar actionBar = getSupportActionBar();
+		ColorDrawable colorDrawable = new ColorDrawable(
+				Color.parseColor("#ffe02f"));
+		actionBar.setBackgroundDrawable(colorDrawable);
+		//actionBar.setHomeButtonEnabled(true);
+		actionBar.setDisplayHomeAsUpEnabled(true);
 		
 		FragmentManager myFragmentManager = getFragmentManager();
         MapFragment myMapFragment 
@@ -124,15 +131,15 @@ public class JourneyActivity extends Activity {
 //		return true;
 //	}
 //
-//	@Override
-//	public boolean onOptionsItemSelected(MenuItem item) {
-//		// Handle action bar item clicks here. The action bar will
-//		// automatically handle clicks on the Home/Up button, so long
-//		// as you specify a parent activity in AndroidManifest.xml.
-//		int id = item.getItemId();
-//		if (id == R.id.action_settings) {
-//			return true;
-//		}
-//		return super.onOptionsItemSelected(item);
-//	}
+    @Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		int itemId = item.getItemId();
+
+		if (itemId == android.R.id.home) {
+			// app icon in action bar clicked; go home
+			finish();
+
+		}
+		return false;
+	}
 }

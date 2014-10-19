@@ -1,21 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content" 
-    android:background="#faf4d3">
-    
-
-        
-<LinearLayout 
-    android:id="@+id/ll"
-    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_toLeftOf="@+id/arrowmenu"
-    android:layout_alignParentLeft="true"
-    android:orientation="vertical" >
-    
-    
-    <RelativeLayout
+    android:background="#faf4d3" >
+
+    <LinearLayout
+        android:id="@+id/ll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/arrowmenu"
+        android:orientation="horizontal"
+        android:paddingTop="3dp" >
+
+        <ImageView
+            android:id="@+id/imageView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dp"
+            android:src="@drawable/start" />
+
+        <TextView
+            android:id="@+id/fromText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:paddingTop="5dp"
+            android:text="From:"
+            android:textColor="#000000"
+            android:textSize="16dp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ll"
+        android:layout_marginLeft="70dp"
+        android:text="Distance:"
+        android:textColor="#000000" />
+
+    <TextView
+        android:id="@+id/price"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/distance"
+        android:layout_marginLeft="70dp"
+        android:text="Price:"
+        android:textColor="#000000" />
+
+    <LinearLayout
+        android:id="@+id/ll1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/price"
+        android:layout_toLeftOf="@+id/arrowmenu"
+        android:orientation="horizontal"
+        android:paddingBottom="3dp" >
+
+        <ImageView
+            android:id="@+id/imageView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dp"
+            android:src="@drawable/destination" />
+
+        <TextView
+            android:id="@+id/toText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:paddingTop="5dp"
+            android:text="To:"
+            android:textColor="#000000"
+            android:textSize="16dp" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/arrowmenu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/ll1"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/ll"
+        android:paddingLeft="10dp"
+        android:paddingRight="5dp"
+        android:src="@drawable/arrowmenu" />
+
+</RelativeLayout><!--
+                            android:paddingTop="5dp"
+                                        android:paddingBottom="5dp"
+                                           <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
 
@@ -25,6 +101,15 @@
                 android:layout_height="wrap_content"
                 android:textColor="#000000"
                 android:text="From:" />
+
+            <ImageView
+                android:id="@+id/imageView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/start" />
+
         </RelativeLayout>
 
         <RelativeLayout
@@ -37,6 +122,15 @@
                 android:layout_height="wrap_content"
                 android:textColor="#000000"
                 android:text="To:" />
+
+            <ImageView
+                android:id="@+id/imageView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_toRightOf="@+id/toText"
+                android:src="@drawable/destination" />
+
         </RelativeLayout>
 
         <RelativeLayout
@@ -65,16 +159,4 @@
             android:layout_height="15dp"
             android:background="#faf4d3" >
         </RelativeLayout>
-    </LinearLayout>
-    <ImageView
-        android:id="@+id/arrowmenu"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignTop="@+id/ll"
-        android:paddingLeft="10dp"
-        android:paddingRight="5dp"
-        android:layout_alignBottom="@+id/ll"
-        
-        android:src="@drawable/arrowmenu"/>
-</RelativeLayout>
+-->

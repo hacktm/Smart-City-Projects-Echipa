@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#faf4d3"
     tools:context="ro.hacktm.cashacab.activities.HistoryActivity" >
 
     <ListView
