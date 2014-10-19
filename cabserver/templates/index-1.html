@@ -18,8 +18,17 @@
 		
 		<script>
 			$(document).ready(function(){
-				//alert("dsa");
-				init_drivers();
+				$(".grid_4").click(function() {
+					var day=this.innerHTML;
+					alert("das");
+			$.ajax({
+			type: "GET",
+			url: "webservice/get_drivers",
+			
+			}).done(function( msg ) {
+			alert( "Data Saved: " + msg );
+			});					
+				 });
 			});
 		</script>
 		<!--[if lt IE 8]>

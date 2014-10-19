@@ -16,8 +16,8 @@ $.ajax({
 
 function init_drivers()
 {
-		alert("hzhz2");
+		
 	$(".grid_4").click(function() {
-		alert("hzhz");
-	}
+		
+	});
 }
