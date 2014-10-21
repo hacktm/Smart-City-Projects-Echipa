@@ -26,6 +26,7 @@ import time, datetime
 from pprint import pformat as ppf
 import urlparse
 import traceback
+import hashlib, random
 #import ipdb			# 
 from types import * 	# this module they say is explicitly safe for import *
 
@@ -72,6 +73,27 @@ class MainHandler( ProfileHandler ):
 		""""  not much """
 		pass
 
+class Index1( ProfileHandler ):
+	def get(self):
+		""" render the html template """
+		self.set_header('Content-Type', 'text/html')
+		self.render( "index-1.html", title="My title" )
+class Index2( ProfileHandler ):
+	def get(self):
+		""" render the html template """
+		self.set_header('Content-Type', 'text/html')
+		self.render( "index-2.html", title="My title" )
+class Index3( ProfileHandler ):
+	def get(self):
+		""" render the html template """
+		self.set_header('Content-Type', 'text/html')
+		self.render( "index-3.html", title="My title" )
+class Index4( ProfileHandler ):
+	def get(self):
+		""" render the html template """
+		self.set_header('Content-Type', 'text/html')
+		self.render( "index-4.html", title="My title" )
+
 
 class CabHandler( ProfileHandler ):
 	""" handles requests from cab tablets """
@@ -91,10 +113,9 @@ class CabHandler( ProfileHandler ):
 	def get(self, command):
 		self.set_header("Content-Type", "application/json")
 		pr_dict = dict(urlparse.parse_qsl(self.request.query[:-1], keep_blank_values=True))
-		print("cabserver.py GET / CommandHandler received: command: %s%s%s \t params: %s%s%s" \
+		print("cabserver.py GET / CabHandler received: command: %s%s%s \t params: %s%s%s" \
 						%(color_cyan_b, command, color_reset, \
 						color_cyan_l, pr_dict, color_reset) )
-		
 		resp_served = {}
 		if command == "get_trips":
 			# TODO SQL 
@@ -110,9 +131,11 @@ class CabHandler( ProfileHandler ):
 															'id_user'     : pr_dict['id_user'],
 															'start_moment': str(item[2]),
 															'stop_moment' : str(item[3]),
-															'distance'    : item[4],
-															'idle'        : item[5],
-															'price'       : item[6],
+															'start_location': {'lat': item[4][0], 'lng': item[4][1]},
+															'stop_location':  {'lat': item[5][0], 'lng': item[5][1]},
+															'distance'    : item[6],
+															'idle'        : item[7],
+															'price'       : item[8],
 														})
 						resp_served['status'] = "OK"
 				else:
@@ -120,57 +143,132 @@ class CabHandler( ProfileHandler ):
 		elif command == "get_positions":
 			# TODO SQL
 			# - input: pr_dict['trip_id']
-			if not pr_dict.has_key('trip_id'):
-				resp_served = {'status': "error", 'details': "missing parameters: %s" %('trip_id'), 'api_fn': command}
+			if not pr_dict.has_key('id_trip'):
+				resp_served = {'status': "error", 'details': "missing parameters: %s" %('id_trip'), 'api_fn': command}
 			else:
-				sql_r = sql('SELECT * FROM positions WHERE id_trip = %(id_trip)s', id_trip=pr_dict['id_trip'])
-				positions_list = [	{'lat':-1, 'lng': -1, 'time': time.time()}, 
-									{'lat':-1, 'lng': -1, 'time': time.time()},
-								]
-				resp_served = {	'id_trip': pr_dict['trip_id'],
-							'positions': positions_list,
-							'status'      : "OK",
-						}
+				sql_r = sql('SELECT id_trip, lat, lng, time, city_hwy FROM positions WHERE id_trip = %(id_trip)s', id_trip=pr_dict['id_trip'])
+				if type(sql_r) is ListType   and   len(sql_r) >= 1:
+					resp_served['positions_list'] = []
+					for item in sql_r:
+						resp_served['positions_list'].append({	'lat': item[1], 
+															'lng': item[2], 
+															'time': str(item[3]),
+															'city_hwy': item[4],
+														})
+					resp_served['status'] = "OK"
+				else:
+					resp_served = {'status': "WARN", 'details': "no records marched", 'api_fn': command}
 		elif command == "login":
-			if not pr_dict.has_key('user')   or   not pr_dict.has_key('pswd'):
-				resp_served = {'status': "error", 'details': "missing one or both of the following parameters: %s" %('user or pswd'), 'api_fn': command}
+			if not pr_dict.has_key('username')   or   not pr_dict.has_key('pswd'):
+				resp_served = {'status': "error", 'details': "missing one or both of the following parameters: %s" %('username or pswd'), 'api_fn': command}
 			else:
-				sql_r = sql('SELECT * FROM users WHERE user = %(user)s AND pswd = %(pswd)s', user=pr_dict['user'], pswd=pr_dict['pswd'] )
+				sql_r = sql("""SELECT id, name, username, email, phone, level FROM users WHERE username = %(username)s AND pswd = %(pswd)s""", username=pr_dict['username'], pswd=pr_dict['pswd'] )
+				if type(sql_r) is ListType   and   len(sql_r) == 0:
+					resp_served = {'status': "WARN", 'details': "no records matched", 'api_fn': command}
 				if type(sql_r) is ListType   and   len(sql_r) == 1:
-					resp_served['id_user'] = sql_r[0]
+					resp_served['user_info'] = { 	'id_user':     sql_r[0][0],
+													'name':        sql_r[0][1],
+													'username':    sql_r[0][1],
+													'email':   sql_r[0][2],
+													'phone':   sql_r[0][3],
+													'level':   sql_r[0][4],
+												}
+					# also add prices:
+					sql_r = sql("""SELECT day, night, city, hwy, stationary FROM tarrifs """)
+					print("sql_r = ", sql_r)
+					if type(sql_r) is ListType   and   len(sql_r) == 1:
+						resp_served['tarrifs'] = { 	'day':     sql_r[0][0],
+													'night':    sql_r[0][1],
+													'city':   sql_r[0][2],
+													'hwy':   sql_r[0][3],
+													'stationary':   sql_r[0][4],
+												}
 					resp_served['status'] = "OK"
 				elif type(sql_r) is ListType   and   len(sql_r) > 1:
 					resp_served = {'status': "error", 'details': "found more users with the same credentials", 'api_fn': command}
+		
+		elif command == "get_drivers":
+				sql_r = sql("""SELECT id, name, username, email, phone, level FROM users """ )
+				if type(sql_r) is ListType   and   len(sql_r) == 0:
+					resp_served = {'status': "WARN", 'details': "no records matched", 'api_fn': command}
+				if type(sql_r) is ListType   and   len(sql_r) >= 1:
+					resp_served['user_list'] = []
+					for item in sql_r:
+						resp_served['user_list'].append({	'id_user': item[0],
+															'name':        item[1],
+															'username':    item[1],
+															'email':       item[2],
+															'phone':       item[3],
+															'level':       item[4],
+															})
+					resp_served['status'] = "OK"
+		
 		else: # not defined
 			resp_served = {'status': "error", 'details': "function not implemented", 'api_fn': command}
 		
+		print("cabserver.py GET / CabHandler served: %s%s%s" %(color_cyan_d, ppf(resp_served), color_reset) )
 		self.write(resp_served)
 	
 	
 	def post(self, command):
 		self.set_header("Content-Type", "application/json")
 		pr_dict = {'warn': 'for POST: you have to know you params by name'}
-		print("cabserver.py POST / CommandHandler received: command: %s%s%s \t params: %s%s%s" \
+		print("cabserver.py POST / CabHandler received: command: %s%s%s \t params: %s%s%s" \
 				%(color_cyan_b, command, color_reset, \
 				color_cyan_l, pr_dict, color_reset) )
+		resp_served = {}
 		if command == "set_position":
-			pr_dict = dict( id_user   = self.get_argument('id_user', ''),
-							timestamp = self.get_argument('timestamp', ''),
-							lat       = self.get_argument('lat', ''),
-							lng       = self.get_argument('lng', ''),
+			pr_dict = dict( id_trip   = self.get_argument('id_trip', ''),
+							lat       = float(self.get_argument('lat', 0)),
+							lng       = float(self.get_argument('lng', 0)),
+							time      = self.get_argument('time', ''),
+							city_hwy   = self.get_argument('city_hwy', ''),
 							)
+			sql_r = sql("""INSERT INTO positions (id_trip, lat, lng, time, city_hwy)
+							VALUES ( %(id_trip)s, %(lat)s, %(lng)s, %(time)s, %(city_hwy)s ) """,
+							id_trip = pr_dict['id_trip'], lat = pr_dict['lat'], lng = pr_dict['lng'], time = pr_dict['time'], city_hwy = pr_dict['city_hwy'] )
+			if type(sql_r) is BooleanType and sql_r is False:
+				resp_served = {'status': "ERROR", 'details': "record NOT saved", 'api_fn': command}
+			else:
+				resp_served = {'status': "OK", 'details': "record saved", 'api_fn': command}
+			print("sql_r = ", sql_r)
+		
 		elif command == "add_event":
 			pr_dict = dict( id_user   = self.get_argument('id_user', ''),
-							timestamp = self.get_argument('timestamp', ''),
+							time = self.get_argument('time', ''),
 							type      = self.get_argument('type', ''),
 							city_hwy  = self.get_argument('city_hwy', ''),
 							distance  = self.get_argument('distance', ''),
+							idle  = self.get_argument('idle', ''),
 							price     = self.get_argument('price', ''),
+							start_moment   = self.get_argument('start_moment', ''),
+							stop_moment    = self.get_argument('stop_moment', ''),
+							start_location = self.get_argument('start_location', []).replace("u", "").replace("[", "").replace("]", "").split(','),
+							stop_location  = self.get_argument('stop_location', [] ).replace("u", "").replace("[", "").replace("]", "").split(','),
 						)
+			if pr_dict['type'] == "stop":
+				# add a trip
+				sql_r = sql("""INSERT INTO trips (id_user, start_moment, stop_moment, start_location, stop_location, distance, idle, price)
+							VALUES ( %(id_user)s, %(start_moment)s, %(stop_moment)s, %(start_location)s, %(stop_location)s, %(distance)s, %(idle)s, %(price)s ) """,
+							id_user = pr_dict['id_user'], start_moment = pr_dict['start_moment'], stop_moment = pr_dict['stop_moment'], 
+							start_location = pr_dict['start_location'], stop_location = pr_dict['stop_location'], 
+							distance = pr_dict['distance'], idle = pr_dict['idle'], price = pr_dict['price'] )
+				print("sql_r = ", sql_r)
+			
+			if pr_dict['type'] == "start":
+				# hash a random sequence
+				hash_o = hashlib.sha224() 		# sha224 is 56 chars long
+				rnd_num = str(random.random())	# range: [0.0, 1.0)
+				hash_o.update( rnd_num )
+				hash_hex = hash_o.hexdigest()
+			
 		else: # not defined
 			resp_served = {'status': "error", 'details': "function not implemented", 'api_fn': command}
 		
 		if VERBOSE_S2: print("params: %s%s%s" %(color_cyan_l, pr_dict, color_reset))
+		
+		print("cabserver.py POST / CabHandler served: %s%s%s" %(color_cyan_d, ppf(resp_served), color_reset) )
+		self.write(resp_served)
 
 
 #*******************************************************************************
@@ -185,7 +283,12 @@ my_settings = {
 				#"cookie_secret":"",
 				"debug":True,
 				}
-my_handlers = [	(r"/", MainHandler),
+my_handlers = [	(r"/index.html", MainHandler),
+				(r"/index-1.html", Index1),
+				(r"/index-2.html", Index2),
+				(r"/index-3.html", Index3),
+				(r"/index-4.html", Index4),
+				#(r"/index-1.html", Register),
 				(r"/webservice/([0-9a-zA-Z_;]*)", CabHandler),
 				#(r"/story/([0-9]+)", StoryHandler),
 				]
@@ -206,44 +309,62 @@ application = Application( my_handlers, **my_settings )
 
 dbcon = configure(db_host='127.0.0.1', db_port='5432', db_name='cashacab', db_username='postgres', db_password='RasPi', autocommit=True)
 
-#sql(statement, commit=False, conn_name='default', **kwargs)
-# sql_r = sql("""INSERT INTO trips (id_user, start_moment, stop_moment, distance, idle, price)
-# 			VALUES (%(id_user)s, %(start_moment)s, %(stop_moment)s, %(distance)s, %(idle)s, %(price)s) """,
-# 			id_user=1, start_moment=time.strftime( "%Y-%m-%d %H:%M:%S" ), stop_moment=time.strftime( "%Y-%m-%d %H:%M:%S" ), distance=10000, idle=10, price=20.99 )
+##sql(statement, commit=False, conn_name='default', **kwargs)
+# sql_r = sql("""INSERT INTO trips (id_user, start_moment, stop_moment, start_location, stop_location, distance, idle, price)
+# 			VALUES (%(id_user)s, %(start_moment)s, %(stop_moment)s, %(start_location)s, %(stop_location)s, %(distance)s, %(idle)s, %(price)s) """,
+# 			id_user=1, start_moment=time.strftime( "%Y-%m-%d %H:%M:%S" ), stop_moment=time.strftime( "%Y-%m-%d %H:%M:%S" ), start_location=[-37.81319, 144.96298], stop_location=[-31.95285, 115.85734], distance=2721560.85287, idle=10, price=200.99 )
+# sql_r = sql("""INSERT INTO users (id, name, username, pswd, email, phone, level)
+# 			VALUES ( %(id)s, %(name)s, %(username)s, %(pswd)s, %(email)s, %(phone)s, %(level)s )""",
+# 			id=2, name='Gig Lel', username='giglel', pswd='1234', email='g@y.ro', phone='+40256123456', level=1)
+# sql_r = sql("""INSERT INTO tarrifs (day, night, city, hwy, stationary)
+# 			VALUES ( %(day)s, %(night)s, %(city)s, %(hwy)s, %(stationary)s )""",
+# 			day=1, night=3, city=1, hwy=2, stationary=0.50)
 # print("sql_r = ", sql_r)
 create_trips = """CREATE TABLE trips(
-	id             bigserial, 
+	id             bigserial  PRIMARY KEY, 
 	id_user        bigserial, 
 	start_moment   timestamp, 
 	stop_moment    timestamp, 
-	start_location float8,
-	stop_location  float8,
+	start_location float8[2],
+	stop_location  float8[2],
 	distance       bigint, 
 	idle           integer,
 	price          money
 	);"""
 create_users = """CREATE TABLE users(
-	id             bigserial, 
-	name           varchar, 
-	pswd           varchar, 
-	email          varchar, 
-	phone          varchar, 
+	id             bigserial  PRIMARY KEY, 
+	name           text, 
+	username       text,
+	pswd           text, 
+	email          text, 
+	phone          text, 
 	level          smallint
 	);"""
 create_positions = """CREATE TABLE positions(
-	id             bigserial,
-	id_trip        bigserial,
+	id             bigserial  PRIMARY KEY,
+	id_trip        text,
 	lat            float8,
 	lng            float8,
 	time           timestamp,
 	city_hwy       bool
 	);"""
-#sql_r = sql(create_positions)
-#print("sql_r = ", sql_r)
-#exit(0)
+create_tarrifs = """CREATE TABLE tarrifs(
+	day	        money,
+	night       money,
+	city        money,
+	hwy         money,
+	stationary  money
+	);"""
+# KEEP IT COMMENTED !
+# sql_r = sql(create_trips)
+# sql_r = sql(create_users)
+# sql_r = sql(create_positions)
+# sql_r = sql(create_tarrifs)
+# print("sql_r = ", sql_r)
+# exit(0)
 
-sql_r = sql('SELECT * FROM trips')
-print("sql_r = ", sql_r)
+#sql_r = sql('SELECT * FROM trips')
+#print("sql_r = ", sql_r)
 
 
 #*******************************************************************************
@@ -270,7 +391,7 @@ def main():
 	signal.signal(signal.SIGTERM, bye_handler)
 	
 	logging.info(" Starting RaspberryPi WebServer! ")
-	application.listen(8080, '0.0.0.0')
+	application.listen(8081, '0.0.0.0')
 	#ipdb.set_trace()	# definitely palce your debugging call BEFORE IOLoop !
 	tornado.ioloop.IOLoop.instance().start()
 
